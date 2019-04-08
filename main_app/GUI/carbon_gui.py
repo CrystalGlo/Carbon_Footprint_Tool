@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file 'ges_gui.ui'
-#
-# Created by: PyQt5 UI code generator 5.11.3
-#
-# WARNING! All changes made in this file will be lost!
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_GesWindow(object):
@@ -56,15 +48,19 @@ class Ui_GesWindow(object):
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setObjectName("label")
         self.verticalLayout.addWidget(self.label)
-        #self.textBrowser_bank = QtWidgets.QTextBrowser(self.frame_bank)
-
-        self.textBrowser_bank = QtWidgets.QTableWidget(self.frame_bank)
-        self.textBrowser_bank.setColumnCount(3)
-        self.textBrowser_bank.setRowCount(45)
-
-
-        self.textBrowser_bank.setObjectName("textBrowser_bank")
-        self.verticalLayout.addWidget(self.textBrowser_bank)
+        self.tableWidget_bank = QtWidgets.QTableWidget(self.frame_bank)
+        self.tableWidget_bank.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.tableWidget_bank.setAlternatingRowColors(True)
+        self.tableWidget_bank.setColumnCount(3)
+        self.tableWidget_bank.setObjectName("tableWidget_bank")
+        self.tableWidget_bank.setRowCount(0)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget_bank.setHorizontalHeaderItem(0, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget_bank.setHorizontalHeaderItem(1, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget_bank.setHorizontalHeaderItem(2, item)
+        self.verticalLayout.addWidget(self.tableWidget_bank)
         self.horizontalLayout.addWidget(self.frame_bank)
         self.frame_ges = QtWidgets.QFrame(self.centralwidget)
         self.frame_ges.setFrameShape(QtWidgets.QFrame.Panel)
@@ -80,14 +76,19 @@ class Ui_GesWindow(object):
         self.label_2.setAlignment(QtCore.Qt.AlignCenter)
         self.label_2.setObjectName("label_2")
         self.verticalLayout_2.addWidget(self.label_2)
-        #self.textBrowser_ges = QtWidgets.QTextBrowser(self.frame_ges)
-
-        self.textBrowser_ges = QtWidgets.QTableWidget(self.frame_ges)
-        self.textBrowser_ges.setColumnCount(4)
-        self.textBrowser_ges.setRowCount(45)
-
-        self.textBrowser_ges.setObjectName("textBrowser_ges")
-        self.verticalLayout_2.addWidget(self.textBrowser_ges)
+        self.tableWidget_carbon = QtWidgets.QTableWidget(self.frame_ges)
+        self.tableWidget_carbon.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.tableWidget_carbon.setAlternatingRowColors(True)
+        self.tableWidget_carbon.setObjectName("tableWidget_carbon")
+        self.tableWidget_carbon.setColumnCount(3)
+        self.tableWidget_carbon.setRowCount(0)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget_carbon.setHorizontalHeaderItem(0, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget_carbon.setHorizontalHeaderItem(1, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget_carbon.setHorizontalHeaderItem(2, item)
+        self.verticalLayout_2.addWidget(self.tableWidget_carbon)
         self.horizontalLayout.addWidget(self.frame_ges)
         self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 1)
         GesWindow.setCentralWidget(self.centralwidget)
@@ -101,13 +102,24 @@ class Ui_GesWindow(object):
         self.label_year.setText(_translate("GesWindow", "2018"))
         self.label_totalGES.setText(_translate("GesWindow", "1355"))
         self.label.setText(_translate("GesWindow", "Relevé bancaire"))
+        item = self.tableWidget_bank.horizontalHeaderItem(0)
+        item.setText(_translate("GesWindow", "Date"))
+        item = self.tableWidget_bank.horizontalHeaderItem(1)
+        item.setText(_translate("GesWindow", "Montant"))
+        item = self.tableWidget_bank.horizontalHeaderItem(2)
+        item.setText(_translate("GesWindow", "Description"))
         self.label_2.setText(_translate("GesWindow", "Relevé des émissions en GES"))
+        item = self.tableWidget_carbon.horizontalHeaderItem(0)
+        item.setText(_translate("GesWindow", "Date"))
+        item = self.tableWidget_carbon.horizontalHeaderItem(1)
+        item.setText(_translate("GesWindow", "Émission de GES"))
+        item = self.tableWidget_carbon.horizontalHeaderItem(2)
+        item.setText(_translate("GesWindow", "Description"))
 
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    app.setStyle('Fusion')
     GesWindow = QtWidgets.QMainWindow()
     ui = Ui_GesWindow()
     ui.setupUi(GesWindow)

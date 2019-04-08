@@ -101,7 +101,7 @@ text-decoration: underline;</string>
           </widget>
          </item>
          <item>
-          <widget class="QTextBrowser" name="textBrowser_bank"/>
+          <widget class="QTableWidget" name="tableWidget_bank"/>
          </item>
         </layout>
        </widget>
@@ -136,7 +136,7 @@ text-decoration: underline;</string>
           </widget>
          </item>
          <item>
-          <widget class="QTextBrowser" name="textBrowser_ges"/>
+          <widget class="QTableWidget" name="tableWidget_carbon"/>
          </item>
         </layout>
        </widget>

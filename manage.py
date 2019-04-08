@@ -1,14 +1,13 @@
 #!/usr/bin/env python
+import asyncio
 import sys
 from PyQt5 import QtWidgets, QtGui
 from main_app.GUI.main_gui import Ui_MainWindow
-
 
 class MainWindow(Ui_MainWindow):
     def __init__(self, dialog):
         Ui_MainWindow.__init__(self)
         self.setupUi(dialog)
-
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

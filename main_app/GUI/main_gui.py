@@ -1,12 +1,13 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 from main_app.data import carbon
-from main_app.calculate.utility import Utility
+from main_app.src.footprintController import Utility
 import matplotlib.pyplot as plt
-from matplotlib import cm, gridspec
+from matplotlib import cm
 import numpy as np
 import math
 from PIL import Image
-from main_app.GUI.ges_gui import Ui_GesWindow
+from main_app.GUI.carbon_gui import Ui_GesWindow
 
 class Ui_MainWindow(object):
     def __init__(self):
@@ -26,14 +27,40 @@ class Ui_MainWindow(object):
         fileName = QtWidgets.QFileDialog.getOpenFileName()
         if fileName != '':
             self.bank_statement = self.utility.read_file(fileName)
+            self.calculateCarbonEmission()
 
     def calculateCarbonEmission(self):
         bank_statement = self.getBankStatement()
         self.ges_statement = self.utility.calculate_carbon(bank_statement)
-        for row in self.ges_statement:
-            if '/' in row[0]:
-                self.year = row[0][6:10]
         self.total_ges = self.utility.calculate_total(self.ges_statement)
+        self.year = self.utility.get_statement_year()
+        self.btn_show.setEnabled(True)
+
+    def openStatementsWindow(self):
+        self.window = QtWidgets.QMainWindow()
+        self.ui = Ui_GesWindow()
+        self.ui.setupUi(self.window)
+        self.window.show()
+        bank_statement = self.getBankStatement()
+        ges_statement = self.getGesStatement()
+        i = 0
+        for val in bank_statement:
+            self.ui.tableWidget_bank.setRowCount(i+1)
+            self.ui.tableWidget_bank.setItem(i, 0, QtWidgets.QTableWidgetItem(str(val[0]).strip()))
+            self.ui.tableWidget_bank.setItem(i, 1, QtWidgets.QTableWidgetItem(str(val[1]).strip() + ' $'))
+            self.ui.tableWidget_bank.setItem(i, 2, QtWidgets.QTableWidgetItem(str(val[2]).strip()))
+            i = i + 1
+        j = 0
+        for val in ges_statement:
+            self.ui.tableWidget_carbon.setRowCount(j+1)
+            self.ui.tableWidget_carbon.setItem(j, 0,QtWidgets.QTableWidgetItem(str(val[0]).strip()))
+            self.ui.tableWidget_carbon.setItem(j, 1, QtWidgets.QTableWidgetItem(str(val[1])+ ' Kg CO2'))
+            self.ui.tableWidget_carbon.setItem(j, 2, QtWidgets.QTableWidgetItem(str(val[2]).strip()))
+            j = j + 1
+        self.createGesGauge(self.total_ges)
+        self.ui.label_gauge.setPixmap(QtGui.QPixmap("main_app/src/images/jauge.png"))
+        self.ui.label_year.setText("Année: " + str(self.year))
+        self.ui.label_totalGES.setText("Total GES: " + str(self.total_ges))
 
     def createGesGauge(self, totalGES):
         dial_colors = np.linspace(0, 1, 60)
@@ -52,44 +79,6 @@ class Ui_MainWindow(object):
         im = Image.open('main_app/src/images/' + figname + '.png')
         width, height = im.size
         im = im.crop((0, 0, width, int(height / 2.0))).save('main_app/src/images/' + figname + '.png')
-
-    def openStatementsWindow(self):
-        self.window = QtWidgets.QMainWindow()
-        self.ui = Ui_GesWindow()
-        self.ui.setupUi(self.window)
-        self.window.show()
-        self.calculateCarbonEmission()
-        bank_statement = self.getBankStatement()
-        ges_statement = self.getGesStatement()
-
-        #here to fill bank statement
-        #self.ui.textBrowser_bank.setPlainText(str(bank_statement))
-
-        i = 0
-        for val in bank_statement:
-            self.ui.textBrowser_bank.setItem(i, 0, QtWidgets.QTableWidgetItem(str(val[0])))
-            self.ui.textBrowser_bank.setItem(i, 1, QtWidgets.QTableWidgetItem(str(val[1])))
-            self.ui.textBrowser_bank.setItem(i, 2, QtWidgets.QTableWidgetItem(str(val[2]) + '$'))
-            i = i + 1
-
-
-        #Here to fill table GES
-        #self.ui.textBrowser_ges.setPlainText(str(ges_statement))
-
-        i = 0
-        for val in ges_statement:
-            self.ui.textBrowser_ges.setItem(i,0,QtWidgets.QTableWidgetItem(str(val[0])))
-            self.ui.textBrowser_ges.setItem(i, 1, QtWidgets.QTableWidgetItem(str(val[1])))
-            self.ui.textBrowser_ges.setItem(i, 2, QtWidgets.QTableWidgetItem(str(val[2])+'$'))
-            self.ui.textBrowser_ges.setItem(i, 3, QtWidgets.QTableWidgetItem(str(val[3])+ ' Kg CO2e'))
-            i = i+1
-        self.createGesGauge(self.total_ges)
-        self.ui.label_gauge.setPixmap(QtGui.QPixmap("main_app/src/images/jauge.png"))
-        self.ui.label_year.setText("Année: " + str(self.year))
-        self.ui.label_totalGES.setText("Total GES: " + str(self.total_ges))
-
-    def update_table(self):
-        self.utility.calculate_carbon()
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -130,7 +119,6 @@ class Ui_MainWindow(object):
         self.tableWidget.setShowGrid(True)
         self.tableWidget.setGridStyle(QtCore.Qt.DashLine)
         self.tableWidget.setWordWrap(False)
-        self.tableWidget.setRowCount(15)
         self.tableWidget.setColumnCount(2)
         self.tableWidget.setObjectName("tableWidget")
         item = QtWidgets.QTableWidgetItem()
@@ -138,9 +126,11 @@ class Ui_MainWindow(object):
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget.setHorizontalHeaderItem(1, item)
         self.tableWidget.horizontalHeader().setCascadingSectionResizes(True)
-        self.tableWidget.horizontalHeader().setMinimumSectionSize(100)
+        self.tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.tableWidget.horizontalHeader().setMinimumSectionSize(50)
         self.tableWidget.horizontalHeader().setSortIndicatorShown(True)
-        self.tableWidget.horizontalHeader().setStretchLastSection(True)
+        self.tableWidget.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+        self.tableWidget.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
         self.tableWidget.verticalHeader().setDefaultSectionSize(30)
         self.horizontalLayout_2.addWidget(self.tableWidget)
         self.gridLayout_table.addWidget(self.frame_table, 0, 0, 1, 1)
@@ -164,6 +154,7 @@ class Ui_MainWindow(object):
         self.btn_show.setStyleSheet("background-color: rgb(225, 225, 225);")
         self.btn_show.setObjectName("btn_show")
         self.btn_show.clicked.connect(self.openStatementsWindow)
+        self.btn_show.setEnabled(False)
         self.gridLayout_buttons.addWidget(self.frame_buttons, 1, 0, 1, 1)
         self.gridLayout_5.addLayout(self.gridLayout_buttons, 0, 2, 1, 1)
         self.gridLayout = QtWidgets.QGridLayout()
@@ -254,23 +245,21 @@ class Ui_MainWindow(object):
         item = self.tableWidget.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "Catégorie"))
         item = self.tableWidget.horizontalHeaderItem(1)
-        item.setText(_translate("MainWindow", "Émission en GES/Kg"))
-
-        #Put the management of table for GES in seperate file for easier management when we need to add more
+        item.setText(_translate("MainWindow", "Émission de GES (Kg)"))
         gesDict = carbon.get_carbon_value()
-
         i = 0
         for key, val in gesDict.items():
+            self.tableWidget.setRowCount(i+1)
             self.tableWidget.setItem(i, 0, QtWidgets.QTableWidgetItem(key))
             self.tableWidget.setItem(i, 1, QtWidgets.QTableWidgetItem(str(val)))
             i = i+1
 
         self.btn_import.setText(_translate("MainWindow", "Importer relevé bancaire"))
-        self.btn_show.setText(_translate("MainWindow", "Afficher relevé de l\'émission en GES"))
-        self.label_title.setText(_translate("MainWindow", "Empreinte de l\'émission en GES"))
+        self.btn_show.setText(_translate("MainWindow", "Afficher relevé de GES"))
+        self.label_title.setText(_translate("MainWindow", "Empreinte de l\'émission de GES"))
         self.menuFile.setTitle(_translate("MainWindow", "Fichier"))
         self.menu_bankStatement.setTitle(_translate("MainWindow", "Relevé bancaire"))
-        self.menu_gesStatement.setTitle(_translate("MainWindow", "Relevé de l\'émission en GES"))
+        self.menu_gesStatement.setTitle(_translate("MainWindow", "Relevé de l\'émission de GES"))
         self.menu_help.setTitle(_translate("MainWindow", "Aide"))
         self.menu_data.setTitle(_translate("MainWindow", "Données"))
         self.menuBtn_showList.setText(_translate("MainWindow", "Afficher la liste"))
